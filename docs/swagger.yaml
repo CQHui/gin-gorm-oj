@@ -1,0 +1,48 @@
+info:
+  contact: {}
+paths:
+  /problem/detail:
+    get:
+      description: 获取问题
+      parameters:
+      - description: problem_identity
+        in: query
+        name: identity
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: 问题详情
+      tags:
+      - 公共方法
+  /problem/list:
+    get:
+      description: 获取问题列表
+      parameters:
+      - description: 输入当前页，默认第一页
+        in: query
+        name: page
+        type: integer
+      - description: 输入页数
+        in: query
+        name: size
+        type: integer
+      - description: keyword
+        in: query
+        name: keyword
+        type: string
+      - description: category_identity
+        in: query
+        name: category_identity
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: 问题列表
+      tags:
+      - 公共方法
+swagger: "2.0"
