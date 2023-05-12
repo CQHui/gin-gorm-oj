@@ -4,6 +4,9 @@ import (
 	"crypto/md5"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
+	"math/rand"
+	"strconv"
 )
 
 type UserClaims struct {
@@ -47,4 +50,16 @@ func ParseToken(tokenString string) (*UserClaims, error) {
 	} else {
 		return nil, fmt.Errorf("an error occurred on parsing token")
 	}
+}
+
+func GetUUID() string {
+	return uuid.New().String()
+}
+
+func GetRandom() string {
+	s := ""
+	for i := 0; i < 6; i++ {
+		s += strconv.Itoa(rand.Intn(10))
+	}
+	return s
 }

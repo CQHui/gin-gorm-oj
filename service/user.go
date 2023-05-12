@@ -1,12 +1,16 @@
 package service
 
 import (
+	"gin-gorm-oj/define"
 	"gin-gorm-oj/help"
 	"gin-gorm-oj/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // GetUserDetail
@@ -94,6 +98,141 @@ func Login(c *gin.Context) {
 		"code": 200,
 		"data": map[string]interface{}{
 			"token": token,
+		},
+	})
+}
+
+// SendCode
+// @Tags 公共方法
+// @Summary 发送验证码
+// @Param email formData string true "email"
+// @Success 200 {string} json "{"code":"200","data":""}"
+// @Router /email/code [post]
+func SendCode(c *gin.Context) {
+	mail := c.PostForm("email")
+
+	code := help.GetRandom()
+	models.RDB.Set(c, mail, code, time.Second*300)
+	log.Print("code = ", code)
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "验证码发送成功",
+	})
+}
+
+// Register
+// @Tags 公共方法
+// @Summary 用户注册
+// @Param mail formData string true "mail"
+// @Param code formData string true "code"
+// @Param name formData string true "name"
+// @Param password formData string true "password"
+// @Param phone formData string false "phone"
+// @Success 200 {string} json "{"code":"200","data":""}"
+// @Router /user [post]
+func Register(c *gin.Context) {
+	mail := c.PostForm("mail")
+	userCode := c.PostForm("code")
+	name := c.PostForm("name")
+	password := c.PostForm("password")
+	phone := c.PostForm("phone")
+	if mail == "" || userCode == "" || name == "" || password == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "参数不正确",
+		})
+		return
+	}
+
+	existedUser := new(models.UserBasic)
+	models.DB.Model(&existedUser).Where("mail = ?", mail).Limit(1).Find(&existedUser)
+
+	if existedUser.Mail != "" {
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "邮箱已存在",
+		})
+		return
+	}
+
+	sysCode, err := models.RDB.Get(c, mail).Result()
+	if err != nil {
+		log.Printf("Get Code Error:%v \n", err)
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "验证码不正确，请重新获取验证码",
+		})
+		return
+	}
+	if sysCode != userCode {
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "验证码不正确",
+		})
+		return
+	}
+
+	data := &models.UserBasic{
+		Identity: help.GetUUID(),
+		Name:     name,
+		Password: help.GetMD5(password),
+		Phone:    phone,
+		Mail:     mail,
+	}
+	err = models.DB.Create(data).Error
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "生成用户失败",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "success",
+	})
+}
+
+// GetRankList
+// @Tags 公共方法
+// @Summary 用户排行榜
+// @Param page query int false "page"
+// @Param size query int false "size"
+// @Success 200 {string} json "{"code":"200","data":""}"
+// @Router /rank/list [get]
+func GetRankList(c *gin.Context) {
+	size, _ := strconv.Atoi(c.DefaultQuery("size", define.DefaultSize))
+	page, err := strconv.Atoi(c.DefaultQuery("page", define.DefaultPage))
+	if err != nil {
+		log.Println("GetProblemList Page strconv Error:", err)
+		return
+	}
+	page = (page - 1) * size
+
+	var count int64
+	list := make([]*models.UserBasic, 0)
+	err = models.DB.Model(new(models.UserBasic)).Count(&count).Order("pass_num DESC, submit_num ASC").
+		Offset(page).Limit(size).Find(&list).Error
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "Get Rank List Error:" + err.Error(),
+		})
+		return
+	}
+	for _, v := range list {
+		mail := strings.Split(v.Mail, "@")
+		if len(mail) >= 2 {
+			v.Mail = string(mail[0][0]) + "**@" + mail[1]
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"data": map[string]interface{}{
+			"list":  list,
+			"count": count,
 		},
 	})
 }
