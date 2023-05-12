@@ -1,4 +1,4 @@
-package help
+package helper
 
 import (
 	"crypto/md5"
@@ -12,6 +12,7 @@ import (
 type UserClaims struct {
 	Identity string
 	Name     string
+	IsAdmin  int
 	jwt.StandardClaims
 }
 

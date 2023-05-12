@@ -2,6 +2,7 @@ package service
 
 import (
 	"gin-gorm-oj/define"
+	"gin-gorm-oj/helper"
 	"gin-gorm-oj/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -89,5 +90,80 @@ func GetProblemDetail(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"data": problemBasic,
+	})
+}
+
+// ProblemCreate
+// @Tags 管理员私有方法
+// @Summary 问题创建
+// @Accept json
+// @Param authorization header string true "authorization"
+// @Param data body define.ProblemBasic true "ProblemBasic"
+// @Success 200 {string} json "{"code":"200","data":""}"
+// @Router /admin/problem [post]
+func createProblem(c *gin.Context) {
+	in := new(define.ProblemBasic)
+	err := c.ShouldBindJSON(in)
+	if err != nil {
+		log.Println("[JsonBind Error] : ", err)
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "参数错误",
+		})
+		return
+	}
+
+	if in.Title == "" || in.Content == "" || len(in.ProblemCategories) == 0 || len(in.TestCases) == 0 || in.MaxRuntime == 0 || in.MaxMem == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "参数不能为空",
+		})
+		return
+	}
+
+	identity := helper.GetUUID()
+	data := &models.ProblemBasic{
+		Identity:   identity,
+		Title:      in.Title,
+		Content:    in.Content,
+		MaxRuntime: in.MaxRuntime,
+		MaxMem:     in.MaxMem,
+	}
+
+	categoryBasics := make([]*models.ProblemCategory, 0)
+	for _, id := range in.ProblemCategories {
+		categoryBasics = append(categoryBasics, &models.ProblemCategory{
+			ProblemId:  data.ID,
+			CategoryId: uint(id),
+		})
+	}
+	data.ProblemCategories = categoryBasics
+
+	testCaseBasics := make([]*models.TestCase, 0)
+	for _, v := range in.TestCases {
+		testCaseBasic := &models.TestCase{
+			Identity:        helper.GetUUID(),
+			ProblemIdentity: identity,
+			Input:           v.Input,
+			Output:          v.Output,
+		}
+		testCaseBasics = append(testCaseBasics, testCaseBasic)
+	}
+	data.TestCases = testCaseBasics
+
+	err = models.DB.Create(&data).Error
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  "create problem error" + err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"data": map[string]interface{}{
+			"identity": data.Identity,
+		},
 	})
 }

@@ -2,7 +2,7 @@ package service
 
 import (
 	"gin-gorm-oj/define"
-	"gin-gorm-oj/help"
+	"gin-gorm-oj/helper"
 	"gin-gorm-oj/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -64,7 +64,7 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	password = help.GetMD5(password)
+	password = helper.GetMD5(password)
 	log.Print("username = {}, password = {}", username, password)
 
 	data := new(models.UserBasic)
@@ -84,7 +84,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	token, err := help.GenerateToken(data.Identity, data.Name)
+	token, err := helper.GenerateToken(data.Identity, data.Name)
 
 	if err == gorm.ErrRecordNotFound {
 		c.JSON(http.StatusOK, gin.H{
@@ -111,7 +111,7 @@ func Login(c *gin.Context) {
 func SendCode(c *gin.Context) {
 	mail := c.PostForm("email")
 
-	code := help.GetRandom()
+	code := helper.GetRandom()
 	models.RDB.Set(c, mail, code, time.Second*300)
 	log.Print("code = ", code)
 	c.JSON(http.StatusOK, gin.H{
@@ -173,9 +173,9 @@ func Register(c *gin.Context) {
 	}
 
 	data := &models.UserBasic{
-		Identity: help.GetUUID(),
+		Identity: helper.GetUUID(),
 		Name:     name,
-		Password: help.GetMD5(password),
+		Password: helper.GetMD5(password),
 		Phone:    phone,
 		Mail:     mail,
 	}

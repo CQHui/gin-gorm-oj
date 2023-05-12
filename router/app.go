@@ -2,6 +2,7 @@ package router
 
 import (
 	_ "gin-gorm-oj/docs"
+	"gin-gorm-oj/middlewares"
 	"gin-gorm-oj/service"
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -26,6 +27,8 @@ func Router() *gin.Engine {
 	r.POST("/user", service.Register)
 
 	r.GET("/rank/list", service.GetRankList)
+
+	r.POST("/admin/problem", middlewares.AuthAdminCheck(), service.GetRankList)
 
 	return r
 }

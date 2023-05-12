@@ -1,6 +1,68 @@
+definitions:
+  define.ProblemBasic:
+    properties:
+      content:
+        description: 问题内容
+        type: string
+      identity:
+        description: 问题表的唯一标识
+        type: string
+      max_mem:
+        description: 最大运行内存
+        type: integer
+      max_runtime:
+        description: 最大运行时长
+        type: integer
+      problem_categories:
+        description: 关联问题分类表
+        items:
+          type: integer
+        type: array
+      test_cases:
+        description: 关联测试用例表
+        items:
+          $ref: '#/definitions/define.TestCase'
+        type: array
+      title:
+        description: 问题标题
+        type: string
+    type: object
+  define.TestCase:
+    properties:
+      input:
+        description: 输入
+        type: string
+      output:
+        description: 输出
+        type: string
+    type: object
 info:
   contact: {}
 paths:
+  /admin/problem:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: authorization
+        in: header
+        name: authorization
+        required: true
+        type: string
+      - description: ProblemBasic
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/define.ProblemBasic'
+      responses:
+        "200":
+          description: '{"code":"200","data":""}'
+          schema:
+            type: string
+      summary: 问题创建
+      tags:
+      - 管理员私有方法
   /email/code:
     post:
       parameters:
@@ -78,6 +140,25 @@ paths:
           schema:
             type: string
       summary: 问题列表
+      tags:
+      - 公共方法
+  /rank/list:
+    get:
+      parameters:
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: size
+        in: query
+        name: size
+        type: integer
+      responses:
+        "200":
+          description: '{"code":"200","data":""}'
+          schema:
+            type: string
+      summary: 用户排行榜
       tags:
       - 公共方法
   /submit/list:

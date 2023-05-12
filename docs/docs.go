@@ -16,6 +16,43 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/problem": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理员私有方法"
+                ],
+                "summary": "问题创建",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "authorization",
+                        "name": "authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "ProblemBasic",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/define.ProblemBasic"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\":\"200\",\"data\":\"\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/email/code": {
             "post": {
                 "tags": [
@@ -132,6 +169,36 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/rank/list": {
+            "get": {
+                "tags": [
+                    "公共方法"
+                ],
+                "summary": "用户排行榜",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "size",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"code\":\"200\",\"data\":\"\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -260,6 +327,60 @@ const docTemplate = `{
                             "type": "string"
                         }
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "define.ProblemBasic": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "description": "问题内容",
+                    "type": "string"
+                },
+                "identity": {
+                    "description": "问题表的唯一标识",
+                    "type": "string"
+                },
+                "max_mem": {
+                    "description": "最大运行内存",
+                    "type": "integer"
+                },
+                "max_runtime": {
+                    "description": "最大运行时长",
+                    "type": "integer"
+                },
+                "problem_categories": {
+                    "description": "关联问题分类表",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "test_cases": {
+                    "description": "关联测试用例表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/define.TestCase"
+                    }
+                },
+                "title": {
+                    "description": "问题标题",
+                    "type": "string"
+                }
+            }
+        },
+        "define.TestCase": {
+            "type": "object",
+            "properties": {
+                "input": {
+                    "description": "输入",
+                    "type": "string"
+                },
+                "output": {
+                    "description": "输出",
+                    "type": "string"
                 }
             }
         }
