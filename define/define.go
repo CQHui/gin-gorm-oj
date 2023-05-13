@@ -19,3 +19,14 @@ type TestCase struct {
 	Input  string `json:"input"`  // 输入
 	Output string `json:"output"` // 输出
 }
+
+var (
+	DateLayout            = "2006-01-02 15:04:05"
+	ValidGolangPackageMap = map[string]struct{}{
+		"bytes":   {},
+		"fmt":     {},
+		"math":    {},
+		"sort":    {},
+		"strings": {},
+	}
+)

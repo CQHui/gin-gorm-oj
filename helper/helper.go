@@ -22,10 +22,11 @@ func GetMD5(s string) string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(s)))
 }
 
-func GenerateToken(identity, name string) (string, error) {
+func GenerateToken(identity, name string, isAdmin int) (string, error) {
 	userClaims := &UserClaims{
-		Identity:       "identity",
-		Name:           "name",
+		Identity:       identity,
+		Name:           name,
+		IsAdmin:        isAdmin,
 		StandardClaims: jwt.StandardClaims{},
 	}
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, userClaims)

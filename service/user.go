@@ -84,7 +84,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	token, err := helper.GenerateToken(data.Identity, data.Name)
+	token, err := helper.GenerateToken(data.Identity, data.Name, data.IsAdmin)
 
 	if err == gorm.ErrRecordNotFound {
 		c.JSON(http.StatusOK, gin.H{

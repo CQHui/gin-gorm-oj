@@ -28,7 +28,12 @@ func Router() *gin.Engine {
 
 	r.GET("/rank/list", service.GetRankList)
 
-	r.POST("/admin/problem", middlewares.AuthAdminCheck(), service.GetRankList)
+	authAdmin := r.Group("/admin", middlewares.AuthAdminCheck())
+	authAdmin.POST("/problem", service.GetRankList)
+
+	authAdmin.POST("/category", service.CategoryCreate)
+	authAdmin.PUT("/category", service.CategoryModify)
+	authAdmin.DELETE("/category", service.CategoryDelete)
 
 	return r
 }
