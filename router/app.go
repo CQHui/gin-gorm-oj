@@ -35,5 +35,9 @@ func Router() *gin.Engine {
 	authAdmin.PUT("/category", service.CategoryModify)
 	authAdmin.DELETE("/category", service.CategoryDelete)
 
+	// 用户私有方法
+	authUser := r.Group("/user", middlewares.AuthUserCheck())
+	authUser.POST("/solution", service.Submit)
+
 	return r
 }

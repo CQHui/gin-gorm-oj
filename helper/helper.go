@@ -6,6 +6,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"math/rand"
+	"os"
 	"strconv"
 )
 
@@ -64,4 +65,27 @@ func GetRandom() string {
 		s += strconv.Itoa(rand.Intn(10))
 	}
 	return s
+}
+
+func CodeSave(code []byte) (string, error) {
+	dirName := GetUUID()
+	path := dirName + "/main.go"
+	err := os.Mkdir(dirName, os.ModePerm)
+	if err != nil {
+		return "", err
+	}
+	f, err := os.Create(path)
+	if err != nil {
+		return "", err
+	}
+	_, err = f.Write(code)
+	if err != nil {
+		return "", err
+	}
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+		}
+	}(f)
+	return path, nil
 }
